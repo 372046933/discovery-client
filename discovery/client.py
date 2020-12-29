@@ -118,6 +118,15 @@ class BaseClient(object):
         params['metadata'] = '{}' if metadata is None else json.dumps(metadata)
         return Request(self._url_for(REGISTER_API), sort_urlencode(params).encode(), method='POST')
 
+    def _cancel_req(self, app_id):
+        """
+        :param str app_id: app_id to cancel
+        :rtype: Request
+        """
+        params = self._common_params()
+        params['appid'] = app_id
+        return Request(self._url_for(CANCEL_API), sort_urlencode(params).encode(), method='POST')
+
     def _renew_req(self, app_id):
         """
         :rtype: Request
@@ -198,6 +207,15 @@ class Client(BaseClient):
         self._send(req)
         name = 'renew_{}'.format(app_id)
         self._crontab.add_task(name, REGISTERGAP, self._renew(app_id, req))
+
+    def cancel(self, app_id):
+        """
+        Cancel instance
+        :param app_id: app_id
+        """
+        req = self._cancel_req(app_id=app_id)
+        rsp = self._send(req)
+        return rsp
 
     def fetch(self, app_id, status=STATUS_UP, **kwargs):
         """
